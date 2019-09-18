@@ -91,7 +91,6 @@ const loadGroup = async (group) => {
 		const task = await getTasks(settings.groups_per_block);
 		await fs.writeFile(settings.last_block_file, JSON.stringify(task));
 		const index = new Uint32Array(task.amount);
-		let carret = index.length ;
 		progress.start(task.amount, 0, {chunk: `${chunk}#${task.start}`, ...get_payload()});
 		const block = await Promise.all(Array(task.amount).fill(0).map(async (_, i) => {
 			const group = new Uint32Array(await loadGroup(task.start + i));
@@ -100,9 +99,10 @@ const loadGroup = async (group) => {
 			progress.increment(1, get_payload());
 			return group;
 		}));
+		let cursor = index.length;
 		block.map((g,i) => {
-			index[i] = carret;
-			carret += g.length;
+			index[i] = cursor;
+			cursor += g.length;
 		});
 		const buffer = Buffer.concat([
 			Buffer.from(index.buffer, index.byteOffset, index.byteLength),
