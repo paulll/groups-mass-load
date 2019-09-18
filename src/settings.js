@@ -5,7 +5,7 @@ module.exports = {
 	redis_key: 'gml:current_user',
 	output: path.join(__dirname, '../output'),
 	last_block_file: path.join(__dirname, '../.last_block'),
-	groups_per_block: 30,
+	groups_per_block: 250,
 	fibers: 20,
 	//proxies: []
 };
