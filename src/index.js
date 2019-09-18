@@ -89,8 +89,8 @@ const loadGroup = async (group) => {
 			index[i] = carret;
 			carret += group.length * 4;
 			progress.increment(1, {
-				rps: stat_groups_size / (Date.now() - start_time),
-				avg: stat_groups_size / stat_groups_loaded
+				rps: Math.round(stat_groups_size / (Date.now() - start_time)),
+				avg: Math.round(stat_groups_size / stat_groups_loaded)
 			});
 			return group;
 		}));
