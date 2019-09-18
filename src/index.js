@@ -49,16 +49,6 @@ const loadGroup = async (group) => {
 		lastBlock = null;
 	}
 
-	const getTasks = async (amount) => {
-		if (lastBlock) {
-			const tempBlock = lastBlock;
-			lastBlock = null;
-			return tempBlock;
-		}
-		const offset = await redis_db.incrbyAsync(settings.redis_key, amount);
-		return {start: offset-amount, amount};
-	};
-
 	const exit = () => {
 		if (force_exit) {
 			progress.stop();
@@ -67,6 +57,21 @@ const loadGroup = async (group) => {
 		console.log(`\n[!] Ждем завершения последнего блока. Нажмите ^C повторно для принудительного завершения`);
 		keep_running = false;
 		force_exit = true;
+	};
+
+	const getTasks = async (amount) => {
+		if (lastBlock) {
+			const tempBlock = lastBlock;
+			lastBlock = null;
+			return tempBlock;
+		}
+		const offset = await redis_db.incrbyAsync(settings.redis_key, amount);
+		if (offset > 500000000) {
+			console.log('Дело сделано. Вроде');
+			progress.stop();
+			process.exit();
+		}
+		return {start: offset-amount, amount};
 	};
 
 	process.on('SIGTERM', exit);
