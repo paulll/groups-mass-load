@@ -35,6 +35,12 @@ const loadGroup = async (group) => {
 	let keep_running = true;
 	let force_exit = false;
 
+	const progress = new SingleBar({
+		format: 'chunk {chunk} |{bar}| {percentage}% | {value}/{total} | rps: {rps} | avg: {avg}',
+		barCompleteChar: '\u2588',
+		barIncompleteChar: '\u2591',
+		hideCursor: true
+	});
 
 	let lastBlock;
 	try {
@@ -54,7 +60,10 @@ const loadGroup = async (group) => {
 	};
 
 	const exit = () => {
-		if (force_exit) process.exit();
+		if (force_exit) {
+			progress.stop();
+			process.exit();
+		}
 		console.log(`\n[!] Ждем завершения последнего блока. Нажмите ^C повторно для принудительного завершения`);
 		keep_running = false;
 		force_exit = true;
@@ -63,12 +72,6 @@ const loadGroup = async (group) => {
 	process.on('SIGTERM', exit);
 	process.on('SIGINT', exit);
 
-	const progress = new SingleBar({
-		format: 'chunk {chunk} |{bar}| {percentage}% | {value}/{total} | rps: {rps} | avg: {avg}',
-		barCompleteChar: '\u2588',
-		barIncompleteChar: '\u2591',
-		hideCursor: true
-	});
 
 	for(let chunk= 0; keep_running; ++chunk) {
 		const task = await getTasks(settings.groups_per_block);
