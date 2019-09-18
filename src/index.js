@@ -92,9 +92,11 @@ const loadGroup = async (group) => {
 			return group;
 		}));
 		const buffer = Buffer.concat([Buffer.from(index.buffer), ...block.map(g => Buffer.from(g.buffer))]);
-		fs.writeFile(`${settings.output}/${task.start}-${task.start+task.amount}.bin`, buffer);
+		await fs.writeFile(`${settings.output}/${task.start}-${task.start+task.amount}.bin`, buffer);
 		await fs.unlink(settings.last_block_file);
 	}
 
+	progress.stop();
 	redis_db.quit();
+	process.exit(0);
 })();
