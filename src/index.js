@@ -90,20 +90,27 @@ const loadGroup = async (group) => {
 	for(let chunk= 0; keep_running; ++chunk) {
 		const task = await getTasks(settings.groups_per_block);
 		await fs.writeFile(settings.last_block_file, JSON.stringify(task));
-		const index = new Uint16Array(task.amount);
-		let carret = index.length * 2;
+		const index = new Uint32Array(task.amount);
+		let carret = index.length ;
 		progress.start(task.amount, 0, {chunk: `${chunk}#${task.start}`, ...get_payload()});
 		const block = await Promise.all(Array(task.amount).fill(0).map(async (_, i) => {
 			const group = new Uint32Array(await loadGroup(task.start + i));
 			stat_groups_loaded++;
 			stat_groups_size += group.length;
-			index[i] = carret;
-			carret += group.length * 4;
 			progress.increment(1, get_payload());
 			return group;
 		}));
-		const buffer = Buffer.concat([Buffer.from(index.buffer), ...block.map(g => Buffer.from(g.buffer))]);
-		await fs.writeFile(`${settings.output}/${task.start}-${task.start+task.amount}.bin`, buffer);
+		block.map((g,i) => {
+			index[i] = carret;
+			carret += g.length;
+		});
+		const buffer = Buffer.concat([
+			Buffer.from(index.buffer, index.byteOffset, index.byteLength),
+			...block.map(g =>
+				Buffer.from(g.buffer, g.byteOffset, g.byteLength)
+			)
+		]);
+		await fs.writeFile(`${settings.output}/${task.start}-${task.start+task.amount}.db2`, buffer);
 		await fs.unlink(settings.last_block_file);
 	}
 
