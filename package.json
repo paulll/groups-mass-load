@@ -1,0 +1,34 @@
+{
+  "name": "groups-mass-load",
+  "version": "1.0.0",
+  "description": "Load vk.com group members",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paulll/groups-mass-load.git"
+  },
+  "keywords": [
+    "vk",
+    "groups",
+    "social",
+    "js",
+    "node"
+  ],
+  "author": "paulll",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/paulll/groups-mass-load/issues"
+  },
+  "homepage": "https://github.com/paulll/groups-mass-load#readme",
+  "dependencies": {
+    "@paulll/vklib": "^2.2.7",
+    "bluebird": "^3.5.5",
+    "cli-progress": "^3.1.0",
+    "promise-fs": "^2.1.1",
+    "redis": "^2.8.0",
+    "request-promise": "^4.2.4"
+  }
+}
