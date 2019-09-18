@@ -15,7 +15,7 @@ const api = new API({
 const loadGroup = async (group) => {
 	try {
 		const members = await api.fetch('groups.getMembers',
-			{v: 5.92, group_id: group, count: 1000}, {limit: Infinity});
+			{v: 5.92, group_id: group, count: 1000}, {limit: Infinity, parallel: true});
 		if (members)
 			return members;
 		return [];

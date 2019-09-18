@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/paulll/groups-mass-load#readme",
   "dependencies": {
-    "@paulll/vklib": "^2.2.7",
+    "@paulll/vklib": "^2.4.1",
     "bluebird": "^3.5.5",
     "cli-progress": "^3.1.0",
     "promise-fs": "^2.1.1",
