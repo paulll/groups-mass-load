@@ -36,7 +36,7 @@ const loadGroup = async (group) => {
 	let force_exit = false;
 
 	const progress = new SingleBar({
-		format: 'chunk {chunk} |{bar}| {percentage}% | {value}/{total} | rps: {rps} | avg: {avg}',
+		format: 'chunk {chunk} |{bar}| {percentage}% | {value}/{total} | rps: {rps} | avg: {avg} | queue: {queue}',
 		barCompleteChar: '\u2588',
 		barIncompleteChar: '\u2591',
 		hideCursor: true
@@ -72,26 +72,29 @@ const loadGroup = async (group) => {
 	process.on('SIGTERM', exit);
 	process.on('SIGINT', exit);
 
+	const get_payload = () => ({
+		rps: Math.round(api.stats.requests() / ((Date.now() - start_time)/1000)),
+		avg: Math.round(stat_groups_size / stat_groups_loaded),
+		queue: api.stats.queue()
+	});
+
+	setInterval(() => {
+		progress.update(progress.value, get_payload())
+	}, 40);
 
 	for(let chunk= 0; keep_running; ++chunk) {
 		const task = await getTasks(settings.groups_per_block);
 		await fs.writeFile(settings.last_block_file, JSON.stringify(task));
 		const index = new Uint16Array(task.amount);
 		let carret = index.length * 2;
-		progress.start(task.amount, 0, {chunk: `${chunk}#${task.start}`,
-			rps: Math.round(stat_groups_size / (Date.now() - start_time)),
-			avg: Math.round(stat_groups_size / stat_groups_loaded)
-		});
+		progress.start(task.amount, 0, {chunk: `${chunk}#${task.start}`, ...get_payload()});
 		const block = await Promise.all(Array(task.amount).fill(0).map(async (_, i) => {
 			const group = new Uint32Array(await loadGroup(task.start + i));
 			stat_groups_loaded++;
 			stat_groups_size += group.length;
 			index[i] = carret;
 			carret += group.length * 4;
-			progress.increment(1, {
-				rps: Math.round(stat_groups_size / (Date.now() - start_time)),
-				avg: Math.round(stat_groups_size / stat_groups_loaded)
-			});
+			progress.increment(1, get_payload());
 			return group;
 		}));
 		const buffer = Buffer.concat([Buffer.from(index.buffer), ...block.map(g => Buffer.from(g.buffer))]);
