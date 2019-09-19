@@ -15,9 +15,8 @@ Promise.promisifyAll(redis);
 	const start_time = Date.now();
 	const last_values = Array(speed_window).fill(start_value);
 
-
 	const progress = new SingleBar({
-		format: ' {percentage}% |{bar}| {value}/{total} | g/s: {speed} | ETA: {eta_formatted}',
+		format: ' {percentage}% |{bar}| {value}/{total} | g/s: {speed} | ETA: {eta_formatted} | online: {connections}',
 		barCompleteChar: '\u2588',
 		barIncompleteChar: '\u2591',
 		hideCursor: true
@@ -25,13 +24,14 @@ Promise.promisifyAll(redis);
 
 	setInterval(async () => {
 		const done = await redis_db.getAsync(settings.redis_key);
+		await redis_db.info();
 
 		last_values.shift();
 		last_values.push(done);
 
 		const dt = Math.min(Math.round((Date.now() - start_time)/1000), speed_window);
 		const speed = Math.round((done - last_values[0])/dt);
-		progress.update(done, {speed});
+		progress.update(done, {speed, connections: redis_db.server_info.connected_clients});
 	}, 1000);
 
 	progress.start(total_groups, start_value, {speed: 'n/a'});
