@@ -9,7 +9,8 @@ Promise.promisifyAll(redis);
 
 const api = new API({
 	access_token: false,
-	service_token: 'c8dbb40ac8dbb40ac8dbb40a64c8ebf155cc8dbc8dbb40a92df9d61ae3e1068cf1fa8e9'
+	service_token: 'c8dbb40ac8dbb40ac8dbb40a64c8ebf155cc8dbc8dbb40a92df9d61ae3e1068cf1fa8e9',
+	threads: settings.fibers
 });
 
 const loadGroup = async (group) => {
