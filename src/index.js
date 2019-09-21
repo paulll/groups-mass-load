@@ -26,6 +26,19 @@ const loadGroup = async (group) => {
 	}
 };
 
+const windows_workaround = async (task) => {
+	for (let done = false; !done; ) {
+		try {
+			await task();
+			done = true;
+		} catch(e) {
+			if (e.code !== 'EPERM')
+				throw e;
+			await Promise.delay(10);
+		}
+	}
+};
+
 (async () => {
 	const redis_db = redis.createClient(settings.redis_url);
 	const start_time = Date.now();
@@ -53,7 +66,7 @@ const loadGroup = async (group) => {
 	const exit = () => {
 		if (force_exit) {
 			progress.stop();
-			process.exit();
+			process.exit(0);
 		}
 		console.log(`\n[!] Ждем завершения последнего блока. Нажмите ^C повторно для принудительного завершения`);
 		keep_running = false;
@@ -70,7 +83,7 @@ const loadGroup = async (group) => {
 		if (offset > 500000000) {
 			console.log('Дело сделано. Вроде');
 			progress.stop();
-			process.exit();
+			process.exit(0);
 		}
 		return {start: offset-amount, amount};
 	};
@@ -112,7 +125,9 @@ const loadGroup = async (group) => {
 			)
 		]);
 		await fs.writeFile(`${settings.output}/${task.start}-${task.start+task.amount}.db2`, buffer);
-		await fs.unlink(settings.last_block_file);
+		await windows_workaround(async () => {
+			await fs.unlink(settings.last_block_file);
+		});
 	}
 
 	progress.stop();
